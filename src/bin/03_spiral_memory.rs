@@ -1,6 +1,7 @@
-#![feature(generators, generator_trait, conservative_impl_trait)]
+#![feature(generators, generator_trait, conservative_impl_trait, inclusive_range_syntax)]
 
 use std::ops::{Generator, GeneratorState};
+use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug)]
 enum Direction {
@@ -56,8 +57,49 @@ fn spiral(val: u32) -> u32 {
     }
 }
 
+
+fn coord2() -> impl Generator<Yield=u32, Return=()> {
+    || {
+        let mut gen = coord();
+        let mut map = HashMap::new();
+        for ix in 1.. {
+            let result = gen.resume();
+            match result {
+                GeneratorState::Yielded((x,y)) => {
+                    let mut score = 0;
+                    for i in -1..=1 {
+                        for j in -1..=1 {
+                            if let Some(score_) = map.get(&(x+i, y+j)) {
+                                score += score_
+                            }
+                        }
+                    }
+                    if ix == 1 {
+                        score = 1
+                    }
+                    map.insert((x,y), score);
+                    yield score;
+                }
+                _ => unreachable!()
+            }
+        }
+    }
+}
+
+fn spiral2(val: u32) -> u32 {
+    let mut gen = coord2();
+    for _ in 0.. {
+        match gen.resume() {
+            GeneratorState::Yielded(r) => if r > val { return r }
+            _ => unreachable!()
+        }
+    }
+    unreachable!()
+}
+
 fn main() {
-    println!("v1: {}", spiral(277678))
+    println!("v1: {}", spiral(277678));
+    println!("v1: {}", spiral2(277678))
 }
 
 #[cfg(test)]
@@ -70,5 +112,16 @@ mod tests {
         assert_eq!(spiral(12), 3);
         assert_eq!(spiral(23), 2);
         assert_eq!(spiral(1024), 31);
+    }
+
+    #[test]
+    fn cases_v2() {
+        let mut gen = coord2();
+        for v in &[1,1,2,4,5,10,11,23,25,26] {
+            match gen.resume() {
+                GeneratorState::Yielded(x) => assert_eq!(*v, x),
+                _ => unreachable!()
+            }
+        }
     }
 }
