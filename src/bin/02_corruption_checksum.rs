@@ -13,34 +13,43 @@ fn get_data() -> Result<Vec<Vec<u32>>> {
     let mut f = fs::File::open("data/02.txt")?;
     let mut s = String::new();
     f.read_to_string(&mut s)?;
-    s.lines().map(|line| {
-        line.split_whitespace().map(|val| {
-            val.parse::<u32>().map_err(|e| format_err!("Parse error: {}", e))
-        }).collect()
-    }).collect()
+    s.lines()
+        .map(|line| {
+            line.split_whitespace()
+                .map(|val| {
+                    val.parse::<u32>()
+                        .map_err(|e| format_err!("Parse error: {}", e))
+                })
+                .collect()
+        })
+        .collect()
 }
 
 fn checksum_v1(rows: &[&[u32]]) -> u32 {
-    rows.iter().map(|&row| {
-        if let MinMaxResult::MinMax(min, max) = row.iter().minmax() {
-            *max - *min
-        } else {
-            panic!("No min-max")
-        }
-    }).sum()
+    rows.iter()
+        .map(|&row| {
+            if let MinMaxResult::MinMax(min, max) = row.iter().minmax() {
+                *max - *min
+            } else {
+                panic!("No min-max")
+            }
+        })
+        .sum()
 }
 
 fn checksum_v2(rows: &[&[u32]]) -> u32 {
-    rows.iter().map(|&row| {
-        for v1 in row {
-            for v2 in row {
-                if v1 > v2 && v1 % v2 == 0 {
-                    return v1 / v2
+    rows.iter()
+        .map(|&row| {
+            for v1 in row {
+                for v2 in row {
+                    if v1 > v2 && v1 % v2 == 0 {
+                        return v1 / v2;
+                    }
                 }
             }
-        }
-        panic!("No evenly divisibles")
-    }).sum()
+            panic!("No evenly divisibles")
+        })
+        .sum()
 }
 
 fn run() -> Result<()> {
@@ -67,19 +76,14 @@ mod tests {
 
     #[test]
     fn cases_v1() {
-        assert_eq!(checksum_v1(&[
-            &[5, 1, 9, 5],
-            &[7, 5, 3],
-            &[2, 4, 6, 8]
-      ]), 18)
+        assert_eq!(checksum_v1(&[&[5, 1, 9, 5], &[7, 5, 3], &[2, 4, 6, 8]]), 18)
     }
 
     #[test]
     fn cases_v2() {
-        assert_eq!(checksum_v2(&[
-            &[5, 9, 2, 8],
-            &[9, 4, 7, 3],
-            &[3, 8, 6, 5]
-        ]), 9)
+        assert_eq!(
+            checksum_v2(&[&[5, 9, 2, 8], &[9, 4, 7, 3], &[3, 8, 6, 5]]),
+            9
+        )
     }
 }

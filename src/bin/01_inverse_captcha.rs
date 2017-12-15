@@ -13,25 +13,26 @@ fn get_data() -> Result<Vec<u8>> {
     f.read_to_string(&mut s)?;
     s.chars()
         .filter(|&c| c != '\n')
-        .map(|c| {
-            match c {
-                '0'...'9' => Ok(c as u8 - '0' as u8),
-                _ => bail!("Expected int, found {:?}", c)
-            }
-        }).collect()
+        .map(|c| match c {
+            '0'...'9' => Ok(c as u8 - '0' as u8),
+            _ => bail!("Expected int, found {:?}", c),
+        })
+        .collect()
 }
 
 fn captcha(data: &[u8], skip: usize) -> u32 {
-    data
-        .iter()
+    data.iter()
         .zip(data.iter().cycle().skip(skip))
-        .fold(0, |acc, (v, vnext)| {
-        if v == vnext {
-            acc + *v as u32
-        } else {
-            acc
-        }
-    })
+        .fold(
+            0,
+            |acc, (v, vnext)| {
+                if v == vnext {
+                    acc + *v as u32
+                } else {
+                    acc
+                }
+            },
+        )
 }
 
 fn captcha_v1(data: &[u8]) -> u32 {

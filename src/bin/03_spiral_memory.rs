@@ -8,7 +8,7 @@ enum Direction {
     Right,
     Up,
     Left,
-    Down
+    Down,
 }
 
 impl Direction {
@@ -18,12 +18,12 @@ impl Direction {
             Right => Up,
             Up => Left,
             Left => Down,
-            Down => Right
+            Down => Right,
         }
     }
 }
 
-fn coord() -> impl Generator<Yield=(i32, i32), Return=()> {
+fn coord() -> impl Generator<Yield = (i32, i32), Return = ()> {
     use Direction::*;
     || {
         yield (0, 0);
@@ -53,23 +53,22 @@ fn spiral(val: u32) -> u32 {
     }
     match gen.resume() {
         GeneratorState::Yielded((x, y)) => x.abs() as u32 + y.abs() as u32,
-        _ => unreachable!()
+        _ => unreachable!(),
     }
 }
 
-
-fn coord2() -> impl Generator<Yield=u32, Return=()> {
+fn coord2() -> impl Generator<Yield = u32, Return = ()> {
     || {
         let mut gen = coord();
         let mut map = HashMap::new();
         for ix in 1.. {
             let result = gen.resume();
             match result {
-                GeneratorState::Yielded((x,y)) => {
+                GeneratorState::Yielded((x, y)) => {
                     let mut score = 0;
                     for i in -1..=1 {
                         for j in -1..=1 {
-                            if let Some(score_) = map.get(&(x+i, y+j)) {
+                            if let Some(score_) = map.get(&(x + i, y + j)) {
                                 score += score_
                             }
                         }
@@ -77,10 +76,10 @@ fn coord2() -> impl Generator<Yield=u32, Return=()> {
                     if ix == 1 {
                         score = 1
                     }
-                    map.insert((x,y), score);
+                    map.insert((x, y), score);
                     yield score;
                 }
-                _ => unreachable!()
+                _ => unreachable!(),
             }
         }
     }
@@ -90,8 +89,10 @@ fn spiral2(val: u32) -> u32 {
     let mut gen = coord2();
     for _ in 0.. {
         match gen.resume() {
-            GeneratorState::Yielded(r) => if r > val { return r }
-            _ => unreachable!()
+            GeneratorState::Yielded(r) => if r > val {
+                return r;
+            },
+            _ => unreachable!(),
         }
     }
     unreachable!()
@@ -117,10 +118,10 @@ mod tests {
     #[test]
     fn cases_v2() {
         let mut gen = coord2();
-        for v in &[1,1,2,4,5,10,11,23,25,26] {
+        for v in &[1, 1, 2, 4, 5, 10, 11, 23, 25, 26] {
             match gen.resume() {
                 GeneratorState::Yielded(x) => assert_eq!(*v, x),
-                _ => unreachable!()
+                _ => unreachable!(),
             }
         }
     }
