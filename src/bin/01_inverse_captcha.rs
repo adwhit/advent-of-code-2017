@@ -21,10 +21,11 @@ fn get_data() -> Result<Vec<u8>> {
         }).collect()
 }
 
-fn captcha(mut data: Vec<u8>) -> u32 {
-    let x = data[0];
-    data.push(x);
-    data.iter().zip(data.iter().skip(1)).fold(0, |acc, (v, vnext)| {
+fn captcha(data: &[u8], skip: usize) -> u32 {
+    data
+        .iter()
+        .zip(data.iter().cycle().skip(skip))
+        .fold(0, |acc, (v, vnext)| {
         if v == vnext {
             acc + *v as u32
         } else {
@@ -33,10 +34,20 @@ fn captcha(mut data: Vec<u8>) -> u32 {
     })
 }
 
+fn captcha_v1(data: &[u8]) -> u32 {
+    captcha(data, 1)
+}
+
+fn captcha_v2(data: &[u8]) -> u32 {
+    captcha(data, data.len() / 2)
+}
+
 fn run() -> Result<()> {
     let data = get_data()?;
-    let outcome = captcha(data);
-    println!("{}", outcome);
+    let outcome1 = captcha_v1(&data);
+    println!("v1: {}", outcome1);
+    let outcome2 = captcha_v2(&data);
+    println!("v2: {}", outcome2);
     Ok(())
 }
 
@@ -53,10 +64,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn cases() {
-        assert_eq!(captcha(vec![1, 1, 2, 2]), 3);
-        assert_eq!(captcha(vec![1, 1, 1, 1]), 4);
-        assert_eq!(captcha(vec![1, 2, 3, 4]), 0);
-        assert_eq!(captcha(vec![9, 1, 2, 1, 2, 1, 2, 9]), 9);
+    fn cases_v1() {
+        assert_eq!(captcha_v1(&[1, 1, 2, 2]), 3);
+        assert_eq!(captcha_v1(&[1, 1, 1, 1]), 4);
+        assert_eq!(captcha_v1(&[1, 2, 3, 4]), 0);
+        assert_eq!(captcha_v1(&[9, 1, 2, 1, 2, 1, 2, 9]), 9);
+    }
+
+    #[test]
+    fn cases_v2() {
+        assert_eq!(captcha_v2(&[1, 2, 1, 2]), 6);
+        assert_eq!(captcha_v2(&[1, 2, 2, 1]), 0);
+        assert_eq!(captcha_v2(&[1, 2, 3, 4, 2, 5]), 4);
+        assert_eq!(captcha_v2(&[1, 2, 3, 1, 2, 3]), 12);
+        assert_eq!(captcha_v2(&[1, 2, 1, 3, 1, 4, 1, 5]), 4);
     }
 }
