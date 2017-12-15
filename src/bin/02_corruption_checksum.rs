@@ -30,13 +30,26 @@ fn checksum_v1(rows: &[&[u32]]) -> u32 {
     }).sum()
 }
 
+fn checksum_v2(rows: &[&[u32]]) -> u32 {
+    rows.iter().map(|&row| {
+        for v1 in row {
+            for v2 in row {
+                if v1 > v2 && v1 % v2 == 0 {
+                    return v1 / v2
+                }
+            }
+        }
+        panic!("No evenly divisibles")
+    }).sum()
+}
+
 fn run() -> Result<()> {
     let data = get_data()?;
     let data: Vec<&[u32]> = data.iter().map(|row| row.as_slice()).collect();
     let outcome1 = checksum_v1(&data);
     println!("v1: {}", outcome1);
-    // let outcome2 = captcha_v2(&data);
-    // println!("v2: {}", outcome2);
+    let outcome2 = checksum_v2(&data);
+    println!("v2: {}", outcome2);
     Ok(())
 }
 
@@ -61,4 +74,12 @@ mod tests {
       ]), 18)
     }
 
+    #[test]
+    fn cases_v2() {
+        assert_eq!(checksum_v2(&[
+            &[5, 9, 2, 8],
+            &[9, 4, 7, 3],
+            &[3, 8, 6, 5]
+        ]), 9)
+    }
 }
