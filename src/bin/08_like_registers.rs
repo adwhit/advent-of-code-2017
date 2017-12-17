@@ -69,8 +69,9 @@ named!(parse_instruction<&str, Instruction>, do_parse!(
    ( Instruction { reg, op, val, pred_reg, test_op, test_val })
 ));
 
-fn interpret(instructions: &[Instruction]) -> Result<HashMap<&str, i32>> {
+fn interpret(instructions: &[Instruction]) -> Result<(HashMap<&str, i32>, i32)> {
     let mut state: HashMap<&str, i32> = instructions.iter().map(|i| (i.reg.as_str(), 0)).collect();
+    let mut maxval = 0;
     for i in instructions {
         let pred = {
             use TestOp::*;
@@ -91,24 +92,26 @@ fn interpret(instructions: &[Instruction]) -> Result<HashMap<&str, i32>> {
                 Op::Inc => *v += i.val,
                 Op::Dec => *v -= i.val
             }
+            if *v > maxval { maxval = *v };
         }
     }
-    Ok(state)
+    Ok((state, maxval))
 }
 
-fn registers_v1(lines: &[String]) -> Result<i32> {
+fn registers(lines: &[String]) -> Result<(i32, i32)> {
     let instructions = lines
         .iter()
         .map(|i| parse_instruction(&i).to_result())
         .collect::<StdResult<Vec<_>, _>>()?;
-    let state = interpret(&instructions)?;
-    Ok(*state.values().max().unwrap())
+    let (state, max) = interpret(&instructions)?;
+    Ok((*state.values().max().unwrap(), max))
 }
 
 fn run() -> Result<()> {
     let lines = get_data("data/08.txt")?;
-    let outcome1 = registers_v1(&lines)?;
-    println!("v1: {}", outcome1);
+    let (statemax, lifemax) = registers(&lines)?;
+    println!("v1: {}", statemax);
+    println!("v2: {}", lifemax);
     // let mut data = get_data("data/07.txt")?;
     // let outcome2 = circus_v2(&mut data);
     // println!("v2: {}", outcome2);
@@ -131,14 +134,7 @@ mod tests {
     #[test]
     fn cases_v1() {
         let mut data = get_data("data/08_test.txt").unwrap();
-        let outcome = registers_v1(&mut data).unwrap();
-        assert_eq!(outcome, 1)
+        let outcome = registers(&mut data).unwrap();
+        assert_eq!(outcome, (1, 10))
     }
-
-    // #[test]
-    // fn cases_v2() {
-    //     let mut data = get_data("data/08_test.txt").unwrap();
-    //     let outcome2 = circus_v2(&mut data);
-    //     assert_eq!(outcome2, 243)
-    // }
 }
