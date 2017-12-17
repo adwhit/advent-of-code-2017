@@ -134,6 +134,6 @@ mod tests {
     fn cases_v2() {
         let mut data = get_data("data/07_test.txt").unwrap();
         let outcome2 = circus_v2(&mut data);
-        assert_eq!(outcome2, 243)
+        assert_eq!(outcome2, 60)
     }
 }
