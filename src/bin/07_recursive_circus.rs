@@ -1,7 +1,7 @@
 extern crate advent_of_code;
 extern crate failure;
-extern crate regex;
 extern crate itertools;
+extern crate regex;
 
 use regex::Regex;
 
@@ -21,17 +21,16 @@ fn get_data(path: &str) -> Result<Map> {
     f.read_to_string(&mut s)?;
     let mut map = HashMap::new();
     let rx = Regex::new(r"(\w+) \((\d+)\)(?: -> ((?:(?:\w+)(?:, )?)+))?")?;
-    s.lines()
-        .for_each(|line| {
-            let m = rx.captures(line).unwrap();
-            let name = m.get(1).unwrap().as_str().to_string();
-            let weight = m.get(2).unwrap().as_str().parse::<u32>().unwrap();
-            let children = match m.get(3) {
-                Some(children) => children.as_str().split(", ").map(String::from).collect(),
-                None => Vec::new()
-            };
-            assert!(map.insert(name, (weight, None, children)).is_none());
-        });
+    s.lines().for_each(|line| {
+        let m = rx.captures(line).unwrap();
+        let name = m.get(1).unwrap().as_str().to_string();
+        let weight = m.get(2).unwrap().as_str().parse::<u32>().unwrap();
+        let children = match m.get(3) {
+            Some(children) => children.as_str().split(", ").map(String::from).collect(),
+            None => Vec::new(),
+        };
+        assert!(map.insert(name, (weight, None, children)).is_none());
+    });
     Ok(map)
 }
 
@@ -41,7 +40,7 @@ fn add_parents(map: &mut Map) {
         for child in children {
             match map.get_mut(child) {
                 Some(&mut (_, ref mut parent, _)) => *parent = Some(k.clone()),
-                None => panic!("Not found: {}", child)
+                None => panic!("Not found: {}", child),
             }
         }
     }
@@ -53,7 +52,7 @@ fn get_root(map: &Map) -> String {
         if let &Some(ref parent) = parent {
             name = parent.to_string();
         } else {
-            return name
+            return name;
         }
     }
 }
@@ -69,7 +68,7 @@ fn get_node_weight(node: &str, map: &Map) -> Either<(u32, u32), u32> {
     for c in children {
         match get_node_weight(c, map) {
             Either::Left((sum, w)) => child_weights.push((sum, w)),
-            Either::Right(w) => return Either::Right(w)
+            Either::Right(w) => return Either::Right(w),
         }
     }
     if child_weights.len() > 2 {
@@ -103,10 +102,9 @@ fn circus_v2(map: &mut Map) -> u32 {
     let root = get_root(map);
     match get_node_weight(&root, map) {
         Either::Left(_) => panic!("Failed to find weight"),
-        Either::Right(v) => v
+        Either::Right(v) => v,
     }
 }
-
 
 fn run() -> Result<()> {
     let mut data = get_data("data/07.txt")?;

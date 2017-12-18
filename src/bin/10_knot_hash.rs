@@ -14,10 +14,12 @@ fn get_data(path: &str) -> Result<Vec<u8>> {
     let mut s = String::new();
     f.read_to_string(&mut s)?;
     s.split(',')
-        .map(
-            |v| v.trim().parse::<u8>()
-             .map_err(|_| format_err!("parse fail: {:?}", v))
-        ).collect()
+        .map(|v| {
+            v.trim()
+                .parse::<u8>()
+                .map_err(|_| format_err!("parse fail: {:?}", v))
+        })
+        .collect()
 }
 
 fn get_data2(path: &str) -> Result<Vec<u8>> {
@@ -33,7 +35,7 @@ fn get_data2(path: &str) -> Result<Vec<u8>> {
 struct State {
     data: Vec<u8>,
     skip: usize,
-    curpos: usize
+    curpos: usize,
 }
 
 impl State {
@@ -41,14 +43,15 @@ impl State {
         State {
             data: (0..=size).collect(),
             skip: 0,
-            curpos: 0
+            curpos: 0,
         }
     }
 
     fn hash(&mut self, len: usize) {
         let l = self.data.len();
         for ix in 0..(len / 2) {
-            self.data.swap((self.curpos + ix) % l, (self.curpos + len - ix - 1) % l);
+            self.data
+                .swap((self.curpos + ix) % l, (self.curpos + len - ix - 1) % l);
         }
         self.curpos = (self.curpos + len + self.skip) % l;
         self.skip = (self.skip + 1) % l;

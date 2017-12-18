@@ -33,38 +33,63 @@ fn process_stream(stream: &[u8]) -> Result<(i32, u32)> {
     while let Some(s) = iter.next() {
         state = match *s {
             b'{' => match state {
-                Start | InGroup => { depth += 1; InGroup},
+                Start | InGroup => {
+                    depth += 1;
+                    InGroup
+                }
                 End => bail!("Bad: {}", *s as char),
-                InGarbage => {garbagect += 1; InGarbage},
+                InGarbage => {
+                    garbagect += 1;
+                    InGarbage
+                }
             },
             b'<' => match state {
                 End => bail!("Bad: {}", *s as char),
                 Start | InGroup => InGarbage,
-                InGarbage => {garbagect += 1; InGarbage},
+                InGarbage => {
+                    garbagect += 1;
+                    InGarbage
+                }
             },
             b'>' => match state {
                 Start | End | InGroup => bail!("Bad: {}", *s as char),
-                InGarbage => InGroup
+                InGarbage => InGroup,
             },
             b'}' => match state {
                 Start => bail!("Bad: {}", *s as char),
-                InGroup | End => { ct += depth; depth -= 1; End },
-                InGarbage => {garbagect += 1; InGarbage},
+                InGroup | End => {
+                    ct += depth;
+                    depth -= 1;
+                    End
+                }
+                InGarbage => {
+                    garbagect += 1;
+                    InGarbage
+                }
             },
             b'!' => match state {
                 Start | End | InGroup => bail!("Bad: {}", *s as char),
-                InGarbage => { iter.next().unwrap(); InGarbage }
+                InGarbage => {
+                    iter.next().unwrap();
+                    InGarbage
+                }
             },
             b',' => match state {
                 Start => bail!("Bad: {}", *s as char),
                 End => Start,
                 InGroup => InGroup,
-                InGarbage => {garbagect += 1; InGarbage},
+                InGarbage => {
+                    garbagect += 1;
+                    InGarbage
+                }
             },
             b'\n' => state,
             _ => match state {
                 Start | InGroup | End => bail!("Bad: {}", *s as char),
-                InGarbage => {garbagect += 1; InGarbage},
+                InGarbage => {
+                    garbagect += 1;
+                    InGarbage
+                }
             },
         };
     }

@@ -27,13 +27,13 @@ struct Instruction {
     val: i32,
     pred_reg: String,
     test_op: TestOp,
-    test_val: i32
+    test_val: i32,
 }
 
 #[derive(Clone, Copy, Debug)]
 enum Op {
     Inc,
-    Dec
+    Dec,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -43,9 +43,8 @@ enum TestOp {
     Eq,
     Neq,
     Lte,
-    Lt
+    Lt,
 }
-
 
 named!(parse_instruction<&str, Instruction>, do_parse!(
     reg: map!(alpha, String::from) >> tag!(" ") >>
@@ -75,7 +74,9 @@ fn interpret(instructions: &[Instruction]) -> Result<(HashMap<&str, i32>, i32)> 
     for i in instructions {
         let pred = {
             use TestOp::*;
-            let v = *(state.get(i.pred_reg.as_str()).ok_or(format_err!("Key not found"))?);
+            let v = *(state
+                .get(i.pred_reg.as_str())
+                .ok_or(format_err!("Key not found"))?);
             let tv = i.test_val;
             match i.test_op {
                 Gt => v > tv,
@@ -83,16 +84,20 @@ fn interpret(instructions: &[Instruction]) -> Result<(HashMap<&str, i32>, i32)> 
                 Eq => v == tv,
                 Neq => v != tv,
                 Lte => v <= tv,
-                Lt => v < tv
+                Lt => v < tv,
             }
         };
         if pred {
-            let v = state.get_mut(i.reg.as_str()).ok_or(format_err!("Key not found"))?;
+            let v = state
+                .get_mut(i.reg.as_str())
+                .ok_or(format_err!("Key not found"))?;
             match i.op {
                 Op::Inc => *v += i.val,
-                Op::Dec => *v -= i.val
+                Op::Dec => *v -= i.val,
             }
-            if *v > maxval { maxval = *v };
+            if *v > maxval {
+                maxval = *v
+            };
         }
     }
     Ok((state, maxval))
