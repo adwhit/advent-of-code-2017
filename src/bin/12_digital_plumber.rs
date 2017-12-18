@@ -34,7 +34,8 @@ fn get_data(path: &str) -> Result<Map> {
 }
 
 fn plumber_(lookup: i32, data: &Map, seen: &mut HashSet<i32>) -> Result<()> {
-    let links = data.get(&lookup).ok_or_else(|| format_err!("Not found: {}", lookup))?;
+    let links = data.get(&lookup)
+        .ok_or_else(|| format_err!("Not found: {}", lookup))?;
     for link in links {
         if seen.insert(*link) {
             plumber_(*link, data, seen)?
@@ -49,13 +50,29 @@ fn plumber(data: &Map) -> Result<i32> {
     Ok(seen.len() as i32)
 }
 
+fn plumber2(data: &Map) -> Result<i32> {
+    let mut programs = Vec::<HashSet<i32>>::new();
+    'outer: for k in data.keys() {
+        for p in &programs {
+            if p.contains(k) {
+                continue 'outer;
+            }
+        }
+        let mut seen = HashSet::<i32>::new();
+        plumber_(*k, data, &mut seen)?;
+        programs.push(seen)
+    }
+    Ok(programs.len() as i32)
+}
+
 fn run() -> Result<()> {
     let data = get_data("data/12.txt")?;
     let outcome = plumber(&data)?;
     println!("v1: {}", outcome);
 
-    // let outcome = hex_ed2(&data);
-    // println!("v2: {}", outcome);
+    let outcome = plumber2(&data)?;
+    println!("v2: {}", outcome);
+
     Ok(())
 }
 
@@ -80,5 +97,9 @@ mod tests {
     }
 
     #[test]
-    fn cases_v2() {}
+    fn cases_v2() {
+        let data = get_data("data/12_test.txt").unwrap();
+        let outcome = plumber2(&data).unwrap();
+        assert_eq!(outcome, 2);
+    }
 }
