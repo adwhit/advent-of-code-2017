@@ -1,4 +1,4 @@
-#![feature(generators, generator_trait, conservative_impl_trait)]
+#![feature(generators, generator_trait, conservative_impl_trait, never_type)]
 
 use std::ops::{Generator, GeneratorState};
 
@@ -8,7 +8,7 @@ extern crate nom;
 
 use advent_of_code::Result;
 
-fn generatorer(start: i64, factor: i64, mod_: i64) -> impl Generator<Yield = i64, Return = ()> {
+fn generatorer(start: i64, factor: i64, mod_: i64) -> impl Generator<Yield = i64, Return = !> {
     move || {
         let mut val = start;
         loop {
@@ -25,14 +25,8 @@ fn duel(starta: i64, moda: i64, startb: i64, modb: i64, max: i64) -> u32 {
     let mut gena = generatorer(starta, 16807, moda);
     let mut genb = generatorer(startb, 48271, modb);
     for _ in 0..max {
-        let a = match gena.resume() {
-            GeneratorState::Yielded(y) => y,
-            _ => unreachable!(),
-        };
-        let b = match genb.resume() {
-            GeneratorState::Yielded(y) => y,
-            _ => unreachable!(),
-        };
+        let GeneratorState::Yielded(a) = gena.resume();
+        let GeneratorState::Yielded(b) = genb.resume();
         if a & 0xffff == b & 0xffff {
             ct += 1
         }
