@@ -62,11 +62,11 @@ fn scanner2(data: &[(u32, u32)]) -> u32 {
             if let &Some(range) = range {
                 if (ix + delay) % ((range - 1) * 2) == 0 {
                     delay += 1;
-                    continue 'outer
+                    continue 'outer;
                 }
             }
         }
-        return delay
+        return delay;
     }
 }
 

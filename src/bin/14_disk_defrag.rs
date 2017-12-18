@@ -4,7 +4,7 @@ extern crate advent_of_code;
 extern crate failure;
 
 use advent_of_code::Result;
-use std::collections::{HashMap};
+use std::collections::HashMap;
 
 type Array = [[bool; 128]; 128];
 
@@ -81,7 +81,11 @@ fn used_array(key: &[u8]) -> Array {
         let hash = knot_hash(key);
         for (ix, byte) in hash.iter().enumerate() {
             for bit in 0..8u8 {
-                let in_use = if ((byte >> (7 - bit)) & 1u8) == 1 { true } else { false };
+                let in_use = if ((byte >> (7 - bit)) & 1u8) == 1 {
+                    true
+                } else {
+                    false
+                };
                 inner[ix * 8 + bit as usize] = in_use
             }
         }
@@ -89,7 +93,6 @@ fn used_array(key: &[u8]) -> Array {
     }
     array
 }
-
 
 fn connected_components(array: &Array) -> u32 {
     let mut grpct = 0;
@@ -109,11 +112,21 @@ fn connected_components(array: &Array) -> u32 {
     grpct
 }
 
-fn dfs(rowix: usize, colix: usize, array: &Array, seen: &mut HashMap<(usize, usize), u32>, grpct: u32) {
+fn dfs(
+    rowix: usize,
+    colix: usize,
+    array: &Array,
+    seen: &mut HashMap<(usize, usize), u32>,
+    grpct: u32,
+) {
     for &(r, c) in &[(-1, 0), (1, 0), (0, -1), (0, 1)] {
         let rix = (rowix as isize + r) as usize;
         let cix = (colix as isize + c) as usize;
-        if *array.get(rix).and_then(|arr| arr.get(cix)).unwrap_or(&false) {
+        if *array
+            .get(rix)
+            .and_then(|arr| arr.get(cix))
+            .unwrap_or(&false)
+        {
             if seen.get(&(rix, cix)).is_none() {
                 seen.insert((rix, cix), grpct);
                 dfs(rix, cix, array, seen, grpct)
