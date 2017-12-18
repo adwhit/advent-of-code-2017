@@ -8,21 +8,23 @@ extern crate nom;
 
 use advent_of_code::Result;
 
-fn generatorer(start: i64, factor: i64) -> impl Generator<Yield = i64, Return = ()> {
+fn generatorer(start: i64, factor: i64, mod_: i64) -> impl Generator<Yield = i64, Return = ()> {
     move || {
         let mut val = start;
         loop {
             val = (val * factor) % 2147483647;
-            yield val
+            if val % mod_ == 0 {
+                yield val
+            }
         }
     }
 }
 
-fn duel(starta: i64, startb: i64) -> u32 {
+fn duel(starta: i64, moda: i64, startb: i64, modb: i64, max: i64) -> u32 {
     let mut ct = 0;
-    let mut gena = generatorer(starta, 16807);
-    let mut genb = generatorer(startb, 48271);
-    for _ in 0..40_000_000 {
+    let mut gena = generatorer(starta, 16807, moda);
+    let mut genb = generatorer(startb, 48271, modb);
+    for _ in 0..max {
         let a = match gena.resume() {
             GeneratorState::Yielded(y) => y,
             _ => unreachable!(),
@@ -39,7 +41,10 @@ fn duel(starta: i64, startb: i64) -> u32 {
 }
 
 fn run() -> Result<()> {
-    let outcome = duel(873, 583);
+    let outcome = duel(873, 1, 583, 1, 40_000_000);
+    println!("v1: {}", outcome);
+
+    let outcome = duel(873, 4, 583, 8, 5_000_000);
     println!("v1: {}", outcome);
 
     Ok(())
@@ -60,14 +65,13 @@ mod tests {
 
     #[test]
     fn cases_v1() {
-        let outcome = duel(65, 8921);
+        let outcome = duel(65, 1, 8921, 1, 40_000_000);
         assert_eq!(outcome, 588);
     }
 
-    // #[test]
-    // fn cases_v2() {
-    //     let data = get_data("data/12_test.txt").unwrap();
-    //     let outcome = plumber2(&data).unwrap();
-    //     assert_eq!(outcome, 2);
-    // }
+    #[test]
+    fn cases_v2() {
+        let outcome = duel(65, 4, 8921, 8, 5_000_000);
+        assert_eq!(outcome, 309);
+    }
 }
