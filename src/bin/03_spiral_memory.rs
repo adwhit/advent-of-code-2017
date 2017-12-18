@@ -1,4 +1,4 @@
-#![feature(generators, generator_trait, conservative_impl_trait, inclusive_range_syntax)]
+#![feature(generators, generator_trait, conservative_impl_trait, inclusive_range_syntax, never_type)]
 
 use std::ops::{Generator, GeneratorState};
 use std::collections::HashMap;
@@ -23,7 +23,7 @@ impl Direction {
     }
 }
 
-fn coord() -> impl Generator<Yield = (i32, i32), Return = ()> {
+fn coord() -> impl Generator<Yield = (i32, i32), Return = !> {
     use Direction::*;
     || {
         yield (0, 0);
@@ -43,6 +43,7 @@ fn coord() -> impl Generator<Yield = (i32, i32), Return = ()> {
                 dirn = dirn.next();
             }
         }
+        unreachable!()
     }
 }
 
@@ -51,48 +52,41 @@ fn spiral(val: u32) -> u32 {
     for _ in 0..(val - 1) {
         gen.resume();
     }
-    match gen.resume() {
-        GeneratorState::Yielded((x, y)) => x.abs() as u32 + y.abs() as u32,
-        _ => unreachable!(),
-    }
+    let GeneratorState::Yielded((x, y)) = gen.resume();
+    x.abs() as u32 + y.abs() as u32
 }
 
-fn coord2() -> impl Generator<Yield = u32, Return = ()> {
+fn coord2() -> impl Generator<Yield = u32, Return = !> {
     || {
         let mut gen = coord();
         let mut map = HashMap::new();
         for ix in 1.. {
             let result = gen.resume();
-            match result {
-                GeneratorState::Yielded((x, y)) => {
-                    let mut score = 0;
-                    for i in -1..=1 {
-                        for j in -1..=1 {
-                            if let Some(score_) = map.get(&(x + i, y + j)) {
-                                score += score_
-                            }
-                        }
+            let GeneratorState::Yielded((x, y)) = result;
+            let mut score = 0;
+            for i in -1..=1 {
+                for j in -1..=1 {
+                    if let Some(score_) = map.get(&(x + i, y + j)) {
+                        score += score_
                     }
-                    if ix == 1 {
-                        score = 1
-                    }
-                    map.insert((x, y), score);
-                    yield score;
                 }
-                _ => unreachable!(),
             }
+            if ix == 1 {
+                score = 1
+            }
+            map.insert((x, y), score);
+            yield score;
         }
+        unreachable!()
     }
 }
 
 fn spiral2(val: u32) -> u32 {
     let mut gen = coord2();
     for _ in 0.. {
-        match gen.resume() {
-            GeneratorState::Yielded(r) => if r > val {
-                return r;
-            },
-            _ => unreachable!(),
+        let GeneratorState::Yielded(r) =  gen.resume();
+        if r > val {
+            return r;
         }
     }
     unreachable!()
@@ -119,10 +113,8 @@ mod tests {
     fn cases_v2() {
         let mut gen = coord2();
         for v in &[1, 1, 2, 4, 5, 10, 11, 23, 25, 26] {
-            match gen.resume() {
-                GeneratorState::Yielded(x) => assert_eq!(*v, x),
-                _ => unreachable!(),
-            }
+            let GeneratorState::Yielded(x) =  gen.resume();
+            assert_eq!(*v, x);
         }
     }
 }
