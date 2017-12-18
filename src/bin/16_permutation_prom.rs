@@ -134,33 +134,3 @@ fn main() {
         }
     })
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn cases_v1() {
-        let lens = &[3, 4, 1, 5];
-        let mut state = State::new(4);
-        let outcome = knot_hash(&mut state, lens);
-        assert_eq!(outcome, 12);
-    }
-
-    #[test]
-    fn cases_v2() {
-        let mut lens = Vec::new();
-        lens.extend(&[17, 31, 73, 47, 23]);
-        let mut state = State::new(255);
-        let outcome = knot_hash2(&mut state, &lens);
-        let expect = "a2582a3a0e66e6e86e3812dcb672a272";
-        assert_eq!(&outcome, expect);
-
-        let mut lens = b"AoC 2017".to_vec();
-        lens.extend(&[17, 31, 73, 47, 23]);
-        let mut state = State::new(255);
-        let outcome = knot_hash2(&mut state, &lens);
-        let expect = "33efeb34ea91902bb2f59c9920caa6cd";
-        assert_eq!(&outcome, expect);
-    }
-}
