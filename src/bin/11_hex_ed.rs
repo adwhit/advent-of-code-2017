@@ -84,7 +84,7 @@ impl Pos {
     }
 }
 
-fn hex_ed(moves: &[Move]) -> i32 {
+fn hex_ed1(moves: &[Move]) -> i32 {
     let mut pos = Pos::default();
     for mov in moves {
         pos.mov(*mov)
@@ -92,18 +92,26 @@ fn hex_ed(moves: &[Move]) -> i32 {
     pos.distance(&Pos::default())
 }
 
-fn run() -> Result<()> {
-    {
-        let data = get_data("data/11.txt")?;
-        let outcome = hex_ed(&data);
-        println!("v1: {}", outcome);
+fn hex_ed2(moves: &[Move]) -> i32 {
+    let mut pos = Pos::default();
+    let mut max = 0;
+    for mov in moves {
+        pos.mov(*mov);
+        let d = pos.distance(&Pos::default());
+        if d > max {
+            max = d
+        }
     }
+    max
+}
 
-    // {
-    //     let data = get_data2("data/10.txt")?;
-    //     let outcome = knot_hash2(&mut state, &data);
-    //     println!("v2: {}", outcome);
-    // }
+fn run() -> Result<()> {
+    let data = get_data("data/11.txt")?;
+    let outcome = hex_ed1(&data);
+    println!("v1: {}", outcome);
+
+    let outcome = hex_ed2(&data);
+    println!("v2: {}", outcome);
     Ok(())
 }
 
@@ -123,10 +131,14 @@ mod tests {
     #[test]
     fn cases_v1() {
         use Move::*;
-        let outcome = hex_ed(&[SouthEast, SouthWest, SouthEast, SouthWest, SouthWest]);
+        let outcome = hex_ed1(&[SouthEast, SouthWest, SouthEast, SouthWest, SouthWest]);
         assert_eq!(outcome, 3)
     }
 
     #[test]
-    fn cases_v2() {}
+    fn cases_v2() {
+        use Move::*;
+        let outcome = hex_ed2(&[SouthEast, SouthWest, SouthEast, SouthWest, SouthWest, North]);
+        assert_eq!(outcome, 3)
+    }
 }
