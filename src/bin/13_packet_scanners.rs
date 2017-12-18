@@ -53,10 +53,30 @@ fn scanner(data: &[(u32, u32)]) -> u32 {
     severity
 }
 
+fn scanner2(data: &[(u32, u32)]) -> u32 {
+    let flat = flatten(data);
+    let mut delay = 0;
+    'outer: loop {
+        for (ix, range) in flat.iter().enumerate() {
+            let ix = ix as u32;
+            if let &Some(range) = range {
+                if (ix + delay) % ((range - 1) * 2) == 0 {
+                    delay += 1;
+                    continue 'outer
+                }
+            }
+        }
+        return delay
+    }
+}
+
 fn run() -> Result<()> {
     let data = get_data("data/13.txt")?;
     let outcome = scanner(&data);
     println!("v1: {}", outcome);
+
+    let outcome = scanner2(&data);
+    println!("v2: {}", outcome);
 
     Ok(())
 }
@@ -79,6 +99,13 @@ mod tests {
         let data = get_data("data/13_test.txt").unwrap();
         let outcome = scanner(&data);
         assert_eq!(outcome, 24);
+    }
+
+    #[test]
+    fn cases_v2() {
+        let data = get_data("data/13_test.txt").unwrap();
+        let outcome = scanner2(&data);
+        assert_eq!(outcome, 10);
     }
 
     // #[test]
