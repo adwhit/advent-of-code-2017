@@ -43,7 +43,6 @@ impl State {
         }
         out
     }
-
 }
 
 fn knot_hash(mut key: Vec<u8>) -> [u8; 16] {
@@ -105,6 +104,5 @@ mod tests {
     }
 
     #[test]
-    fn cases_v2() {
-    }
+    fn cases_v2() {}
 }

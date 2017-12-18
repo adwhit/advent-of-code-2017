@@ -25,11 +25,11 @@ fn duel(starta: i64, startb: i64) -> u32 {
     for _ in 0..40_000_000 {
         let a = match gena.resume() {
             GeneratorState::Yielded(y) => y,
-            _ => unreachable!()
+            _ => unreachable!(),
         };
         let b = match genb.resume() {
             GeneratorState::Yielded(y) => y,
-            _ => unreachable!()
+            _ => unreachable!(),
         };
         if a & 0xffff == b & 0xffff {
             ct += 1
@@ -41,9 +41,6 @@ fn duel(starta: i64, startb: i64) -> u32 {
 fn run() -> Result<()> {
     let outcome = duel(873, 583);
     println!("v1: {}", outcome);
-
-    // let outcome = plumber2(&data)?;
-    // println!("v2: {}", outcome);
 
     Ok(())
 }
