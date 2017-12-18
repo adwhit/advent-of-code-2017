@@ -39,7 +39,7 @@ fn flatten(data: &[(u32, u32)]) -> Vec<Option<u32>> {
     flat
 }
 
-fn firewall(data: &[(u32, u32)]) -> u32 {
+fn scanner(data: &[(u32, u32)]) -> u32 {
     let flat = flatten(data);
     let mut severity = 0;
     for (ix, range) in flat.iter().enumerate() {
@@ -55,7 +55,7 @@ fn firewall(data: &[(u32, u32)]) -> u32 {
 
 fn run() -> Result<()> {
     let data = get_data("data/13.txt")?;
-    let outcome = firewall(&data);
+    let outcome = scanner(&data);
     println!("v1: {}", outcome);
 
     Ok(())
@@ -76,15 +76,15 @@ mod tests {
 
     #[test]
     fn cases_v1() {
-        let data = get_data("data/12_test.txt").unwrap();
-        let outcome = plumber(&data).unwrap();
-        assert_eq!(outcome, 6);
+        let data = get_data("data/13_test.txt").unwrap();
+        let outcome = scanner(&data);
+        assert_eq!(outcome, 24);
     }
 
-    #[test]
-    fn cases_v2() {
-        let data = get_data("data/12_test.txt").unwrap();
-        let outcome = plumber2(&data).unwrap();
-        assert_eq!(outcome, 2);
-    }
+    // #[test]
+    // fn cases_v2() {
+    //     let data = get_data("data/12_test.txt").unwrap();
+    //     let outcome = plumber2(&data).unwrap();
+    //     assert_eq!(outcome, 2);
+    // }
 }
