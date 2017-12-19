@@ -221,7 +221,7 @@ impl State {
             }
             self.codeptr += 1;
             if self.codeptr >= self.code.len() as i64 {
-                return self.sendct
+                return self.sendct;
             }
         }
     }

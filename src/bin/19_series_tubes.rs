@@ -12,7 +12,7 @@ enum Route {
     Vert,
     ChangeDirn,
     Crumb(char),
-    None
+    None,
 }
 
 impl Route {
@@ -23,29 +23,26 @@ impl Route {
             b'|' => Vert,
             b'+' => ChangeDirn,
             b' ' => None,
-            c => Crumb(c as char)
+            c => Crumb(c as char),
         }
     }
 }
-
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Dirn {
     North,
     South,
     East,
-    West
+    West,
 }
-
 
 fn get_data(path: &str) -> Result<Vec<Vec<Route>>> {
     let mut f = fs::File::open(path)?;
     let mut s = String::new();
     f.read_to_string(&mut s)?;
     Ok(s.lines()
-        .map(|line| {
-            line.bytes().map(|b| Route::from_u8(b)).collect()
-        }).collect())
+        .map(|line| line.bytes().map(|b| Route::from_u8(b)).collect())
+        .collect())
 }
 
 fn onward(row: usize, col: usize, dirn: Dirn) -> (usize, usize) {
@@ -58,74 +55,66 @@ fn onward(row: usize, col: usize, dirn: Dirn) -> (usize, usize) {
     }
 }
 
-fn tubes(data: &Vec<Vec<Route>>) -> Vec<char> {
+fn tubes(data: &Vec<Vec<Route>>) -> (Vec<char>, u32) {
     use Dirn::*;
     use Route::*;
     let mut row = 0;
     let mut col = data[0].iter().position(|d| *d == Route::Vert).unwrap();
     let mut dirn = South;
     let mut crumbs = Vec::new();
+    let mut stepct = 0;
     loop {
         let next = match data[row][col] {
             Vert | Horz => onward(row, col, dirn),
-            Crumb(c) => {crumbs.push(c); onward(row, col, dirn)},
-            None => return crumbs, // we're done (or we messed up)
-            ChangeDirn => {
-                match dirn {
-                    North | South => {
-                        match data[row][col + 1] {
-                            Horz | Crumb(_) => {
-                                dirn = East;
-                                (row, col + 1)
-                            }
-                            _ => match data[row][col - 1] {
-                                Horz | Crumb(_) => {
-                                    dirn = West;
-                                    (row, col - 1)
-                                }
-                                _ => panic!("Something wrong at {}, {}", row, col)
-                            }
-                        }
-                    },
-                    East | West => {
-                        match data[row - 1][col] {
-                            Vert | Crumb(_) => {
-                                dirn = North;
-                                (row - 1, col)
-                            }
-                            _ => match data[row + 1][col] {
-                                Vert | Crumb(_) => {
-                                    dirn = South;
-                                    (row + 1, col)
-                                }
-                                _ => panic!("Something wrong at {}, {}", row, col)
-                            }
-                        }
-                    }
-                }
+            Crumb(c) => {
+                crumbs.push(c);
+                onward(row, col, dirn)
             }
+            None => return (crumbs, stepct), // we're done (or we messed up)
+            ChangeDirn => match dirn {
+                North | South => match data[row][col + 1] {
+                    Horz | Crumb(_) => {
+                        dirn = East;
+                        (row, col + 1)
+                    }
+                    _ => match data[row][col - 1] {
+                        Horz | Crumb(_) => {
+                            dirn = West;
+                            (row, col - 1)
+                        }
+                        _ => panic!("Something wrong at {}, {}", row, col),
+                    },
+                },
+                East | West => match data[row - 1][col] {
+                    Vert | Crumb(_) => {
+                        dirn = North;
+                        (row - 1, col)
+                    }
+                    _ => match data[row + 1][col] {
+                        Vert | Crumb(_) => {
+                            dirn = South;
+                            (row + 1, col)
+                        }
+                        _ => panic!("Something wrong at {}, {}", row, col),
+                    },
+                },
+            },
         };
         row = next.0;
         col = next.1;
+        stepct += 1;
     }
-
 }
 
-
 fn run() -> Result<()> {
-    {
-        let data = get_data("data/19.txt")?;
-        let outcome = tubes(&data);
-        print!("v1: ");
-        for c in outcome { print!("{}", c) }
-        println!()
+    let data = get_data("data/19.txt")?;
+    let outcome = tubes(&data);
+    print!("v1: ");
+    for c in outcome.0 {
+        print!("{}", c)
     }
-
-    // {
-    //     let data = get_data("data/18.txt")?;
-    //     let outcome = duet2(data);
-    //     println!("v2: {}", outcome);
-    // }
+    println!();
+    println!("v2: {}", outcome.1);
     Ok(())
 }
 
@@ -146,10 +135,7 @@ mod tests {
     fn cases_v1() {
         let data = get_data("data/19_test.txt").unwrap();
         let outcome = tubes(&data);
-        assert_eq!(&outcome, &['A', 'B', 'C', 'D', 'E', 'F'])
+        assert_eq!(&outcome.0, &['A', 'B', 'C', 'D', 'E', 'F']);
+        assert_eq!(outcome.1, 38);
     }
-
-    // #[test]
-    // fn cases_v2() {
-    // }
 }
