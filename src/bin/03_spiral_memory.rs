@@ -1,4 +1,5 @@
-#![feature(generators, generator_trait, conservative_impl_trait, inclusive_range_syntax, never_type)]
+#![feature(generators, generator_trait, conservative_impl_trait, inclusive_range_syntax,
+           never_type)]
 
 use std::ops::{Generator, GeneratorState};
 use std::collections::HashMap;
@@ -84,7 +85,7 @@ fn coord2() -> impl Generator<Yield = u32, Return = !> {
 fn spiral2(val: u32) -> u32 {
     let mut gen = coord2();
     for _ in 0.. {
-        let GeneratorState::Yielded(r) =  gen.resume();
+        let GeneratorState::Yielded(r) = gen.resume();
         if r > val {
             return r;
         }
@@ -113,7 +114,7 @@ mod tests {
     fn cases_v2() {
         let mut gen = coord2();
         for v in &[1, 1, 2, 4, 5, 10, 11, 23, 25, 26] {
-            let GeneratorState::Yielded(x) =  gen.resume();
+            let GeneratorState::Yielded(x) = gen.resume();
             assert_eq!(*v, x);
         }
     }
