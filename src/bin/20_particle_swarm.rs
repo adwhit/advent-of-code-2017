@@ -6,6 +6,7 @@ use advent_of_code::Result;
 
 use std::fs;
 use std::io::prelude::*;
+use std::collections::HashMap;
 
 
 #[derive(Clone, Debug)]
@@ -22,10 +23,6 @@ impl Particle {
             self.vel[ix] += self.acc[ix];
             self.pos[ix] += self.vel[ix];
         }
-    }
-
-    fn dist(&self) -> i64 {
-        self.pos[0].abs() + self.pos[1].abs() + self.pos[2].abs()
     }
 
     fn abs_accel(&self) -> i64 {
@@ -67,15 +64,46 @@ fn get_data(path: &str) -> Result<Vec<Particle>> {
     Ok(pts)
 }
 
-fn swarm(particles: &mut [Particle]) -> usize {
-    let itm = particles.iter().min_by(|p1, p2| p1.abs_accel().cmp(&p2.abs_accel())).unwrap();
+fn swarm(particles: &[Particle]) -> usize {
+    let itm = particles
+        .iter()
+        .min_by(|p1, p2| p1.abs_accel().cmp(&p2.abs_accel())).unwrap();
     itm.ix
+}
+
+fn swarm2(particles: &mut Vec<Particle>) -> usize {
+    for _ in 0..100 {  // turns out to be enough
+        let mut collision_map = HashMap::new();
+        for (ix, p) in particles.iter().enumerate() {
+            let v = collision_map.entry(p.pos).or_insert(Vec::new());
+            v.push(ix)
+        }
+        let mut to_rm = Vec::new();
+        for posn in collision_map.values() {
+            if posn.len() > 1 {
+                to_rm.extend(posn)
+            }
+        }
+        to_rm.sort();
+        for ix in to_rm.iter().rev() {
+            particles.remove(*ix);
+        }
+        for p in particles.iter_mut() {
+            p.step()
+        }
+    }
+    particles.len()
 }
 
 fn run() -> Result<()> {
     let mut data = get_data("data/20.txt")?;
-    let outcome = swarm(&mut data);
+
+    let outcome = swarm(&data);
     println!("v1: {}", outcome);
+
+    let outcome = swarm2(&mut data);
+    println!("v2: {}", outcome);
+
     Ok(())
 }
 
